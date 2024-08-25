@@ -16,6 +16,10 @@
       "supportsTablet": true
     },
     "android": {
+      "permissions": [
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -27,7 +31,14 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-media-library",
+        {
+          "mediaPermission": "Allow $(PRODUCT_NAME) to access your media.",
+          "saveMediaPermission": "Allow $(PRODUCT_NAME) to save the media."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
