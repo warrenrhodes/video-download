@@ -17,7 +17,7 @@ import * as Clipboard from "expo-clipboard";
 import { Loading } from "./Loading";
 import { Spacing } from "./Spacing";
 import * as FileSystem from "expo-file-system";
-import { VideoMaxDirPath } from "@/lib/constants";
+import { MediaType, VideoMaxDirPath } from "@/lib/constants";
 import { displayMessage } from "./Toast";
 import { YouTubeDownloadBox } from "./YoutubeDownloadBox";
 export const Hero = () => {
@@ -175,7 +175,7 @@ export const Hero = () => {
                   <View className="flex-1 absolute inset-0 h-screen w-full">
                     <TouchableMedia
                       uri={video.urls[0].url}
-                      mediaType={"videos"}
+                      mediaType={MediaType.VIDEO}
                     />
                   </View>
                   <Pressable
@@ -242,7 +242,9 @@ export const Hero = () => {
       <YouTubeDownloadBox
         isLoaded={isUrlLoading}
         url={inputText}
-        callback={setIsUrlLoading}
+        callback={(value) => {
+          setIsUrlLoading(value), setInputText("");
+        }}
       />
     </View>
   );

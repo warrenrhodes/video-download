@@ -1,6 +1,6 @@
 import { useState, ReactNode } from "react";
 import { View, Dimensions, Text } from "react-native";
-import { Badge, Tab, TabView } from "@rneui/themed";
+import { Tab, TabView } from "@rneui/themed";
 import { cn } from "@/lib/utils";
 
 const { width } = Dimensions.get("window");
@@ -9,11 +9,9 @@ export const ScrollableTabs = ({
   tabs,
   initialTab = 0,
   tabsComponent,
-  itemsCount,
 }: {
   tabs: { label: string; icons: string; iconType: string }[];
   initialTab?: number;
-  itemsCount?: number[];
   tabsComponent: ReactNode[];
 }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -50,17 +48,6 @@ export const ScrollableTabs = ({
             >
               {tab.label}
             </Text>
-            {itemsCount && itemsCount[index] > 0 && (
-              <Badge
-                value={itemsCount[index]}
-                status="error"
-                containerStyle={{
-                  position: "absolute",
-                  top: 5,
-                  left: width / 3.5,
-                }}
-              />
-            )}
           </Tab.Item>
         ))}
       </Tab>

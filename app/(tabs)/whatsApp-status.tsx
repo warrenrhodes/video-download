@@ -3,7 +3,12 @@ import { useCallback, useEffect, useState } from "react";
 import { View, Text, Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { useFocusEffect } from "expo-router";
-import { VideoMaxDirPath, WhatsAppDirPath, WhatsAppTab } from "@/lib/constants";
+import {
+  MediaType,
+  VideoMaxDirPath,
+  WhatsAppDirPath,
+  WhatsAppTab,
+} from "@/lib/constants";
 import { Loading } from "@/components/Loading";
 import { ScrollableTabs } from "@/components/Tabs";
 import { MasonryList, MediaItem } from "@/components/ImageManager";
@@ -86,7 +91,6 @@ export default function WaDownloader() {
           <View className="h-full flex-col bg-rose-700 justify-center">
             <ScrollableTabs
               tabs={WhatsAppTab}
-              itemsCount={[imageMedia.length, videoMedia.length]}
               initialTab={0}
               tabsComponent={[
                 <View className="flex-1">
@@ -107,7 +111,7 @@ export default function WaDownloader() {
                           uri: media,
                         };
                       })}
-                      mediaType="photos"
+                      mediaType={MediaType.PHOTO}
                     />
                   )}
                 </View>,
@@ -129,7 +133,7 @@ export default function WaDownloader() {
                           uri: media,
                         };
                       })}
-                      mediaType="videos"
+                      mediaType={MediaType.VIDEO}
                     />
                   )}
                 </View>,

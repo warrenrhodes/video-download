@@ -15,9 +15,18 @@ export const WhatsAppTab = [
     icons: "video-collection",
     iconType: "materialicons",
   },
+  {
+    label: "Audio",
+    icons: "music-note",
+    iconType: "materialicons",
+  },
 ];
 
-export type MediaType = "photos" | "videos";
+export enum MediaType {
+  PHOTO = "photos",
+  VIDEO = "videos",
+  AUDIO = "audios",
+}
 
 export const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";

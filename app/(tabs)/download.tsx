@@ -34,11 +34,15 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Loading } from "@/components/Loading";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { ScrollableTabs } from "@/components/Tabs";
+import { Audio } from "expo-av";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+
 interface MediaInfo {
   mediaUri: string;
   updatedAt: string;
   isSelected: boolean;
   groupId: string;
+  title?: string;
 }
 interface MediaGroup {
   isSelected: boolean;
@@ -62,7 +66,7 @@ const initialValue: MediaListContextProps = {
   handleItemGroupDeselect: () => {},
   handleItemDeletion: () => {},
   handleDeselectAll: () => {},
-  mediaType: "photos",
+  mediaType: MediaType.PHOTO,
 };
 const MediaListContext = createContext(initialValue);
 
@@ -72,6 +76,7 @@ type Action =
   | { type: "selectItemGroup"; groupId: string }
   | { type: "deselectItemGroup"; groupId: string }
   | { type: "deleteItem"; groupId: string; itemId: string }
+  | { type: "updateMediaList"; mediaList: MediaGroup[] }
   | { type: "deselectAll" };
 
 const imageListReducer: Reducer<MediaGroup[], Action> = (state, action) => {
@@ -143,6 +148,9 @@ const imageListReducer: Reducer<MediaGroup[], Action> = (state, action) => {
         })),
       }));
     }
+    case "updateMediaList": {
+      return action.mediaList;
+    }
     default: {
       throw new Error("Unknown action: " + (action as any).type);
     }
@@ -152,6 +160,9 @@ const imageListReducer: Reducer<MediaGroup[], Action> = (state, action) => {
 export default function WhatsAppDownloadHistory() {
   const [imageMedia, setImageMedias] = useState<Record<string, MediaGroup>>({});
   const [videoMedia, setVideoMedias] = useState<Record<string, MediaGroup>>({});
+  const [audioMedias, setAudioMedias] = useState<Record<string, MediaGroup>>(
+    {}
+  );
   const [loading, setLoading] = useState(true);
 
   //const [tasks, dispatch] = useReducer(imageReducer, props.items[1]);
@@ -168,10 +179,15 @@ export default function WhatsAppDownloadHistory() {
           file.endsWith(".jpg") ||
           file.endsWith(".mp4") ||
           file.endsWith(".png") ||
-          file.endsWith(".jpeg")
+          file.endsWith(".jpeg") ||
+          file.endsWith(".mp3") ||
+          file.endsWith(".m4a") ||
+          file.endsWith(".opus") ||
+          file.endsWith(".webm")
       );
       const imageMediasData: Record<string, MediaGroup> = {};
       const videoMediasData: Record<string, MediaGroup> = {};
+      const audioMediasData: Record<string, MediaGroup> = {};
 
       for (const file of mediaFiles) {
         const fileInfo = await FileSystem.getInfoAsync(
@@ -196,11 +212,12 @@ export default function WhatsAppDownloadHistory() {
                   updatedAt: date,
                   isSelected: false,
                   groupId: date,
+                  title: file,
                 },
                 ...(imageMediasData[date]?.medias || []),
               ],
             };
-          } else if (file.endsWith(".mp4")) {
+          } else if (file.endsWith(".mp4" || file.endsWith(".webm"))) {
             videoMediasData[date] = {
               isSelected: false,
               date: date,
@@ -210,23 +227,45 @@ export default function WhatsAppDownloadHistory() {
                   updatedAt: date,
                   isSelected: false,
                   groupId: date,
+                  title: file,
                 },
                 ...(videoMediasData[date]?.medias || []),
+              ],
+            };
+          } else if (
+            file.endsWith(
+              ".mp3" || file.endsWith(".opus") || file.endsWith(".m4a")
+            )
+          ) {
+            audioMediasData[date] = {
+              isSelected: false,
+              date: date,
+              medias: [
+                {
+                  mediaUri: `${VideoMaxDirPath}${file}`,
+                  updatedAt: date,
+                  isSelected: false,
+                  groupId: date,
+                  title: file,
+                },
+                ...(audioMediasData[date]?.medias || []),
               ],
             };
           }
         }
       }
-
       setImageMedias({
         ...imageMediasData,
       });
       setVideoMedias({
         ...videoMediasData,
       });
+      setAudioMedias({
+        ...audioMediasData,
+      });
       setLoading(false);
     } catch (error) {
-      console.error("Error accessing WhatsApp status media:", error);
+      console.error("Error accessing to media media:", error);
       setLoading(false);
       return [];
     }
@@ -242,20 +281,18 @@ export default function WhatsAppDownloadHistory() {
   useEffect(() => {
     if (
       Object.entries(imageMedia).length === 0 ||
-      Object.entries(videoMedia).length === 0
+      Object.entries(videoMedia).length === 0 ||
+      Object.entries(audioMedias).length === 0
     ) {
       getVideoMaxStatusMedia();
     }
   }, []);
-  const imageMediaList = Object.values(imageMedia);
-  const videoMediaList = Object.values(videoMedia);
   return (
     <View className="flex-1 flex-col bg-white">
       <View className="h-full flex-col bg-rose-700 justify-center">
         <ScrollableTabs
           tabs={WhatsAppTab}
           initialTab={0}
-          itemsCount={[imageMediaList.length, videoMediaList.length]}
           tabsComponent={[
             <View className="flex-1">
               {loading ? (
@@ -265,7 +302,7 @@ export default function WhatsAppDownloadHistory() {
                   onRefresh={onRefresh}
                   medias={imageMedia}
                   refreshing={refreshing}
-                  mediaType="photos"
+                  mediaType={MediaType.PHOTO}
                 />
               )}
             </View>,
@@ -277,7 +314,19 @@ export default function WhatsAppDownloadHistory() {
                   onRefresh={onRefresh}
                   medias={videoMedia}
                   refreshing={refreshing}
-                  mediaType="videos"
+                  mediaType={MediaType.VIDEO}
+                />
+              )}
+            </View>,
+            <View className="flex-1">
+              {loading ? (
+                <Loading />
+              ) : (
+                <FlashMediaList
+                  onRefresh={onRefresh}
+                  medias={audioMedias}
+                  refreshing={refreshing}
+                  mediaType={MediaType.AUDIO}
                 />
               )}
             </View>,
@@ -298,6 +347,13 @@ const FlashMediaList = (props: {
     imageListReducer,
     Object.values(props.medias)
   );
+
+  useEffect(() => {
+    dispatch({
+      type: "updateMediaList",
+      mediaList: Object.values(props.medias),
+    });
+  }, [props.medias]);
 
   function handleItemChange(groupId: string, itemId: string) {
     dispatch({
@@ -393,7 +449,6 @@ const FlashMediaList = (props: {
 const ImageHistoryList = (props: { mediaGroup: MediaGroup }) => {
   const { handleItemGroupSelect, handleItemGroupDeselect } =
     useContext(MediaListContext);
-
   return (
     <Animated.View entering={FadeIn} className="mb-2">
       <View className="bg-neutral-200 h-16 w-full  p-4 flex-row justify-between">
@@ -409,11 +464,14 @@ const ImageHistoryList = (props: { mediaGroup: MediaGroup }) => {
       </View>
       <View className="flex-row w-full h-full flex flex-wrap gap-1 p-1">
         {props.mediaGroup.medias.map((media) => (
-          <ImageHistory
-            media={media}
-            key={media.mediaUri}
-            groupId={props.mediaGroup.date}
-          />
+          <View key={media.mediaUri} className="w-[123px]">
+            <ImageHistory media={media} groupId={props.mediaGroup.date} />
+            {media.title && (
+              <Text className="truncate line-clamp-2 text-[12px]">
+                {media.title}
+              </Text>
+            )}
+          </View>
         ))}
       </View>
     </Animated.View>
@@ -422,7 +480,76 @@ const ImageHistoryList = (props: { mediaGroup: MediaGroup }) => {
 
 const ImageHistory = (props: { media: MediaInfo; groupId: string }) => {
   const { handleItemChange, mediaType } = useContext(MediaListContext);
+  const [sound, setSound] = useState<Audio.Sound>();
+  const [soundIsPlaying, setSoundIsPlaying] = useState<boolean>(false);
   const { media, groupId } = props;
+
+  async function playSound(url: string) {
+    console.log("Loading Sound");
+    const { sound } = await Audio.Sound.createAsync(
+      { uri: url },
+      { shouldPlay: true }
+    );
+    setSound(sound);
+
+    console.log("Playing Sound");
+    await sound.playAsync();
+  }
+
+  const handleSoundPress = async (uri: string) => {
+    if (sound) {
+      const status = await sound.getStatusAsync();
+      if (status.isLoaded == true && status.isPlaying == true) {
+        sound.pauseAsync();
+        setSoundIsPlaying(false);
+      } else if (status.isLoaded == true && status.isPlaying == false) {
+        sound.playAsync();
+        setSoundIsPlaying(true);
+      }
+      return;
+    }
+    await playSound(uri);
+    setSoundIsPlaying(true);
+  };
+
+  if (mediaType === MediaType.AUDIO) {
+    return (
+      <View className="relative w-[123px] h-36 bg-gray-800 rounded-xl overflow-hidden">
+        <View className="absolute top-0 left-0 right-0 bottom-0 w-full h-full bg-black/20 items-center justify-center">
+          <FontAwesome name="music" size={64} color="white" />
+        </View>
+        <Pressable
+          className="absolute right-1 bottom-1 w-full h-full"
+          onPress={() => handleSoundPress(media.mediaUri)}
+        >
+          {soundIsPlaying ? (
+            <MaterialIcons
+              name="pause-circle-outline"
+              size={35}
+              color="white"
+              className="absolute right-1 bottom-1 "
+            />
+          ) : (
+            <MaterialIcons
+              name="play-circle-outline"
+              size={35}
+              color="white"
+              className="absolute right-1 bottom-1 "
+            />
+          )}
+        </Pressable>
+      </View>
+    );
+  }
+
+  useEffect(() => {
+    return sound
+      ? () => {
+          console.log("Unloading Sound");
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
   return (
     <View className="relative w-[123px] h-36">
       <Image
