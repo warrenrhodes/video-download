@@ -36,9 +36,14 @@
         "expo-media-library",
         {
           "mediaPermission": "Allow $(PRODUCT_NAME) to access your media.",
-          "saveMediaPermission": "Allow $(PRODUCT_NAME) to save the media."
+          "saveMediaPermission": "Allow $(PRODUCT_NAME) to save the media.",
+          "isAccessMediaLocationEnabled": true
         }
-      ]
+      ],
+      "ffmpeg-kit-react-native",
+      {
+        "version": "4.5.1"
+      }
     ],
     "experiments": {
       "typedRoutes": true
