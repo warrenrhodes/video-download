@@ -14,6 +14,7 @@ export const displayMessage = ({
     textStyle: {
       fontSize: 16,
       fontWeight: "bold",
+      fontFamily: "NerkoOne",
     },
     backgroundColor: messageType === "success" ? "green" : "red",
     shadowColor: "black",

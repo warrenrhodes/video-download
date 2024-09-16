@@ -7,6 +7,14 @@ export enum ErrorType {
   invalidUrl,
 }
 
+export enum SocialMediaType {
+  FACEBOOK = "facebook",
+  YOUTUBE = "youtube",
+  INSTAGRAM = "instagram",
+  TWITTER = "twitter",
+  TIKTOK = "tiktok",
+}
+
 export interface ResponseData<T> {
   data?: T;
   errorMessage?: string;
@@ -26,15 +34,16 @@ export interface YouTubeVideoFormat {
   url: string;
   itag: number;
   container: string;
-  videoCodec: string | null;
-  audioCodec: string | null;
-  contentLength: string | null;
-  qualityLabel: string | null;
+  videoCodec?: string | null;
+  audioCodec?: string | null;
+  contentLength?: string | null;
+  qualityLabel?: string | null;
 }
 
 export interface YTRequestFormat {
   title: string;
-  thumbnail: string;
+  thumbnail?: string;
+  socialMedia: SocialMediaType;
   formats: {
     video: YouTubeVideoFormat[];
     audio: YouTubeVideoFormat[];
@@ -60,68 +69,43 @@ const ALLOWED_CONTAINERS = new Set(["mp4", "webm"]);
  *   - `errorMessage`: An error message if something went wrong.
  *   - `errorMessageType`: An enum value indicating the type of error that occurred.
  */
-export const fetchFacebookUrl = async (
-  videoUrl: string
-): Promise<LoadFbUrlResponse> => {
+export const fetchSocialUrl = async (
+  videoUrl: string,
+  socialMedia: SocialMediaType
+): Promise<ResponseData<YTRequestFormat>> => {
   try {
-    const response = await fetch("https://www.getfvid.com/downloader", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: `url=${encodeURIComponent(videoUrl)}`,
-    });
+    const response = await fetch(`${HOST}/social-info?url=${videoUrl}`);
 
-    const htmlContent = await response.text();
-
-    if (
-      htmlContent.includes("Uh-Oh! This video might be private and not public")
-    ) {
-      console.error("Error", "This video is private");
-      return { errorMessageType: ErrorType.privateVideo };
-    }
-
-    const regexNama = /<p class="card-text">(.*?)<\/p>/g;
-    const nameMatch = regexNama.exec(htmlContent);
-    const videoFileName = nameMatch ? `${nameMatch[1]}` : "";
-
-    const rgx =
-      /<a href="(.+?)" target="_blank" class="btn btn-download"(.+?)>(.+?)<\/a>/g;
-    const matches = htmlContent.matchAll(rgx);
-    const downloadOptions = Array.from(matches, (m) => ({
-      quality: m[3].includes("HD") ? "Download In HD Quality" : m[3],
-      url: m[1].replace(/amp;/g, ""),
-    }));
-
-    if (downloadOptions.length > 0) {
-      console.log(
-        "Download options:",
-        downloadOptions.map((option) => ({
-          url: option.url,
-          quality: option.quality,
-        }))
-      );
+    if (response.status !== 200 || !response.ok) {
       return {
-        success: {
-          fileName: videoFileName,
-          urls: downloadOptions.map((option) => ({
-            url: option.url,
-            quality: option.quality,
-          })),
+        errorMessage:
+          "Failed to get the video info. Check if the URL is valid or is not private. we only support a public video.",
+      };
+    }
+    const data = await response.json();
+    return {
+      data: {
+        title: data["title"],
+        socialMedia: socialMedia,
+        formats: {
+          video: [
+            {
+              url: data["url"],
+              itag: 0,
+              container: "mp4",
+              qualityLabel: "360p",
+              videoCodec: "h264",
+              audioCodec: "aac",
+            },
+          ],
+          audio: [],
         },
-      };
-    } else {
-      return {
-        errorMessage: "Invalid Video URL",
-        errorMessageType: ErrorType.invalidUrl,
-      };
-    }
+      },
+    };
   } catch (error) {
-    console.error("Error:", error);
     console.error("Error", "An error occurred while processing the video");
     return {
-      errorMessage: "An error occurred while processing the video",
-      errorMessageType: ErrorType.unknown,
+      errorMessage: error as string,
     };
   }
 };
@@ -135,8 +119,18 @@ export const fetchFacebookUrl = async (
 export const fetchYouTubeVideoByUrl = async (
   url: string
 ): Promise<ResponseData<YTRequestFormat>> => {
+  if (url.includes("facebook")) {
+    const result = await fetchSocialUrl(url, SocialMediaType.FACEBOOK);
+
+    return result;
+  }
+  if (url.includes("tiktok")) {
+    const result = await fetchSocialUrl(url, SocialMediaType.TIKTOK);
+
+    return result;
+  }
   try {
-    const response = await fetch(`${HOST}/video-info?url=${url}`);
+    const response = await fetch(`${HOST}/youtube-info?url=${url}`);
 
     if (response.status !== 200 || !response.ok) {
       return {
@@ -147,7 +141,7 @@ export const fetchYouTubeVideoByUrl = async (
 
     const sortedFormats = sortYDlByBestMatch(data);
     return sortedFormats
-      ? { data: sortedFormats }
+      ? { data: { ...sortedFormats, socialMedia: SocialMediaType.YOUTUBE } }
       : {
           errorMessage:
             "Something went wrong. Please try again. if the error persists contact us.",
@@ -240,4 +234,8 @@ export const estimateDownloadSize = (size: number) => {
 
 export const isExpired = (timeInMilliseconds: number) => {
   return Date.now() > timeInMilliseconds;
+};
+
+export const getRandomNumber = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };

@@ -22,6 +22,19 @@ export const WhatsAppTab = [
   },
 ];
 
+export const WhatsAppTabIcons = [
+  {
+    label: "Pictures",
+    icons: "picture",
+    iconType: "antdesign",
+  },
+  {
+    label: "Videos",
+    icons: "video-collection",
+    iconType: "materialicons",
+  },
+];
+
 export enum MediaType {
   PHOTO = "photos",
   VIDEO = "videos",

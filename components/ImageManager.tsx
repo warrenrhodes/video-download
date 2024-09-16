@@ -183,7 +183,6 @@ export const TouchableMedia = (props: {
   mediaType: MediaType;
 }) => {
   const [displayLargeImage, setDisplayLargeImage] = useState(false);
-
   return (
     <TouchableOpacity
       className="h-full w-full relative"
@@ -264,7 +263,6 @@ const ImageViewer = ({
     }
     return imageSize;
   };
-  console.log("imageUri", isVideoLoading);
   return (
     <Overlay
       transparent
@@ -292,11 +290,13 @@ const ImageViewer = ({
                 width: width,
                 height: height * 0.7,
                 maxWidth: 500,
-                maxHeight: 300,
+                maxHeight: 500,
+                backgroundColor: "black",
               }}
               shouldPlay={!isVideoLoading}
               useNativeControls
-              resizeMode={ResizeMode.COVER}
+              isLooping
+              resizeMode={ResizeMode.CONTAIN}
               onLoad={() => {
                 setIsVideoLoading(false);
               }}

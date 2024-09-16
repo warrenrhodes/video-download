@@ -1,76 +1,110 @@
 import { Tabs } from "expo-router";
 
 import * as MediaLibrary from "expo-media-library";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { RootSiblingParent } from "react-native-root-siblings";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Entypo from "@expo/vector-icons/Entypo";
-import Feather from "@expo/vector-icons/Feather";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { VideoSvg } from "@/components/icons/VideoSvg";
+import { DownloadIcons } from "@/components/icons/Download";
+import { WhatsAppStatus } from "@/components/icons/Whasapp-icon";
+import { View } from "react-native";
+import { DatabaseProvider } from "@/components/hooks/DatabaseProvider";
+import { useThemeMode } from "@rneui/themed";
+import { cn } from "@/lib/utils";
 export default function TabLayout() {
   const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
-
-  const isGrantedPermission = (): boolean => {
-    return permissionResponse?.status == "granted";
-  };
-  const [isAuthorized, setIsAuthorized] = useState(isGrantedPermission);
+  const { mode } = useThemeMode();
 
   const handlePermissionRequest = async () => {
-    const result = await requestPermission();
-
-    if (result.granted) {
-      setIsAuthorized(true);
+    if (permissionResponse?.status == "granted") {
       return;
     }
     handlePermissionRequest();
   };
 
   useEffect(() => {
-    if (isAuthorized) {
+    if (permissionResponse?.status == "granted") {
       return;
     }
+    const handlePermissionRequest = async () => {
+      await requestPermission();
+    };
     handlePermissionRequest();
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <RootSiblingParent>
-        <Tabs
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: "rgba(190, 18, 60, 1)",
-            tabBarInactiveTintColor: "rgba(0, 0, 0, 0.5)",
-          }}
-        >
-          <Tabs.Screen
-            name="index"
-            options={{
-              title: "Home",
-              tabBarIcon: ({ color }) => (
-                <Entypo name="youtube" size={24} color={color} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="whatsApp-status"
-            options={{
-              title: "WhatsApp Status",
-              tabBarIcon: ({ color }) => (
-                <Feather name="message-circle" size={24} color={color} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="download"
-            options={{
-              title: "Download",
-              tabBarIcon: ({ color }) => (
-                <FontAwesome name="history" size={24} color={color} />
-              ),
-            }}
-          />
-        </Tabs>
-      </RootSiblingParent>
-    </SafeAreaView>
+    <DatabaseProvider>
+      <SafeAreaView
+        style={{ flex: 1 }}
+        className={cn(mode === "light" ? "light" : "dark")}
+      >
+        <RootSiblingParent>
+          <View className={cn("flex-1", mode === "light" ? "light" : "dark")}>
+            <Tabs
+              screenOptions={{
+                headerShown: false,
+                tabBarActiveTintColor:
+                  mode === "light" ? "white" : "rgba(55, 65,81 ,1)",
+                tabBarInactiveTintColor: "rgba(55, 65,81 ,0.4)",
+                unmountOnBlur: true,
+                tabBarStyle: {
+                  position: "absolute",
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20,
+                  backgroundColor:
+                    mode === "dark" ? "white" : "rgba(61,97,255,0.10);",
+                  height: 60,
+                  borderTopWidth: 0,
+                  zIndex: 10,
+                },
+              }}
+            >
+              <Tabs.Screen
+                name="index"
+                options={{
+                  title: "Home",
+                  tabBarIcon: ({ color }) => (
+                    <VideoSvg size={24} color={color} />
+                  ),
+                  tabBarLabel: "Home",
+                  tabBarLabelStyle: {
+                    fontFamily: "NerkoOne",
+                    fontSize: 15,
+                  },
+                }}
+              />
+              <Tabs.Screen
+                name="whatsApp-status"
+                options={{
+                  title: "WhatsApp Status",
+                  tabBarIcon: ({ color }) => (
+                    <WhatsAppStatus size={24} color={color} />
+                  ),
+                  tabBarLabel: "WhatsApp Status",
+                  tabBarLabelStyle: {
+                    fontFamily: "NerkoOne",
+                    fontSize: 15,
+                  },
+                }}
+              />
+              <Tabs.Screen
+                name="download"
+                options={{
+                  title: "Download",
+                  tabBarIcon: ({ color }) => (
+                    <DownloadIcons size={24} color={color} />
+                  ),
+                  tabBarLabel: "Download",
+                  tabBarLabelStyle: {
+                    fontFamily: "NerkoOne",
+                    fontSize: 15,
+                  },
+                }}
+              />
+            </Tabs>
+          </View>
+        </RootSiblingParent>
+      </SafeAreaView>
+    </DatabaseProvider>
   );
 }

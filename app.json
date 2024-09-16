@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "xvideo-downloader",
-    "slug": "xvideo-downloader",
+    "name": "videoMax",
+    "slug": "videomax",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -18,12 +18,14 @@
     "android": {
       "permissions": [
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.READ_EXTERNAL_STORAGE"
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_MEDIA_LOCATION"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.karibu.videomax"
     },
     "web": {
       "bundler": "metro",
@@ -43,6 +45,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "cbd881c4-274c-4d85-bb4b-914849c74aaf"
+      }
     }
   }
 }
