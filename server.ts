@@ -15,7 +15,8 @@ import express from "express";
 import { generate } from "youtube-po-token-generator";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = (process.env.PORT as number | undefined) || 3000;
+const HOST = process.env.VIDEO_MAX_HOST || "0.0.0.0";
 
 interface VideoFormat {
   url: string;
@@ -238,4 +239,6 @@ app.use(
 );
 
 // eslint-disable-ncontainer-line no-console
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, HOST, () => {
+  console.log(`Server running on http://${HOST}:${PORT}`);
+});
