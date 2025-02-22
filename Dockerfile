@@ -11,9 +11,6 @@ RUN npm ci --legacy-peer-deps
 COPY tsconfig*.json ./
 COPY server.ts ./
 
-# Set environment variable
-ARG VIDEO_MAX_HOST
-
 # Build the server
 RUN npm run build:server
 

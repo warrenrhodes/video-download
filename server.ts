@@ -1,16 +1,16 @@
 /* eslint-disable no-console */
 import dotenv from "dotenv";
-import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import fetch from "node-fetch";
 import path from "path";
 import { alldl } from "rahad-all-downloader";
+import ytdl from "@distube/ytdl-core";
 
 dotenv.config({
   path: path.resolve(__dirname, "../.env"),
 });
 
-import { YtdlCore } from "@ybd-project/ytdl-core";
+// import { YtdlCore } from "@ybd-project/ytdl-core";
 import express from "express";
 import { generate } from "youtube-po-token-generator";
 
@@ -22,8 +22,8 @@ interface VideoFormat {
   url: string;
   itag: number;
   container: string;
-  videoCodec: string | null;
-  audioCodec: string | null;
+  videoCodec?: string | null;
+  audioCodec?: string | null;
   contentLength: string | null;
   qualityLabel: string | null;
 }
@@ -86,12 +86,12 @@ function shortenTikTokUrl(url: string): string {
 }
 
 app.use(helmet());
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-  message: "You can only make 100 requests per 15min",
-});
-app.use(limiter);
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+//   message: "You can only make 100 requests per 15min",
+// });
+// app.use();
 
 app.get("/youtube-info", async (req, res) => {
   try {
@@ -101,17 +101,113 @@ app.get("/youtube-info", async (req, res) => {
       return res.status(400).json({ error: "Invalid or missing YouTube URL" });
     }
 
+    res.setHeader("Access-Control-Allow-Headers", "*");
+
     const userData = await generate();
     if (!userData?.poToken || !userData.visitorData) {
       return res.status(500).json({ error: "Failed to generate user data" });
     }
 
-    const ytd = new YtdlCore({
-      poToken: userData.poToken,
-      visitorData: userData.visitorData,
-    });
+    // const ytd = new YtdlCore({
+    //   hl: "en",
+    //   gl: "US",
+    //   poToken: userData.poToken,
+    //   visitorData: userData.visitorData,
+    //   disableDefaultClients: true,
+    //   disablePoTokenAutoGeneration: true,
+    //   disableInitialSetup: true,
+    //   parsesHLSFormat: false,
+    //   noUpdate: true,
+    //   logDisplay: ["warning", "error"],
+    //   html5Player: {
+    //     useRetrievedFunctionsFromGithub: true,
+    //   },
+    // });
 
-    const info = await ytd.getFullInfo(url);
+    const cookies = [
+      {
+        name: "__Secure-1PAPISID",
+        value: "wuO6xPfvP7Vy1il0/AIpIUXJL2ZsI3H8n6",
+        domain: ".youtube.com",
+        path: "/",
+        secure: true,
+      },
+      {
+        name: "__Secure-1PSID",
+        value:
+          "g.a000tQiEnADLQ7RSxCbA9gfmm7nve-spMsrqnW5OkvXPK16tUDBK5Ovrq2pyOlRC3SSOzSEzYgACgYKAasSAQASFQHGX2Mi8NS77DiuClRtWEqsIOL_ShoVAUF8yKopGSAMSd7fX89Fwkkv2M9D0076",
+        domain: ".youtube.com",
+        path: "/",
+        secure: true,
+      },
+      {
+        name: "__Secure-1PSIDCC",
+        value:
+          "AKEyXzXW0trSHbmn3Qpq-zlzHrx4XLlcBhYs5s3pEIWxVlaM36akMrupxkwd-Pu1ZmSMpiakmA",
+        domain: ".youtube.com",
+        path: "/",
+        secure: true,
+      },
+      {
+        name: "__Secure-1PSIDTS",
+        value:
+          "sidts-CjIBEJ3XVw-0hNLro8leICJc2YNOx-ACevZwcH27slEiOQmNG7_ueNb32WgxjrsoIybRohAA",
+        domain: ".youtube.com",
+        path: "/",
+        secure: true,
+      },
+      {
+        name: "LOGIN_INFO",
+        value:
+          "AFmmF2swRgIhANpOyQHVDsB_iC13AVbB6lLI1e9i2P-VTSJ-VehDQI2xAiEAlIQLLHrl5XfsX7DIwwBNJ86Bi11gxU8eb9V3hqGb2MQ:QUQ3MjNmeW9MX1NybmV1d1NiLWk3V3FRaVdmZnpYTHo0U0lfRHJfYlZzUnZubU4yOUV1ZTRYalVHQXl4RGhQU2V4T1FNNGUzRGllSnUtbG9rb3VJMldqOTZYS3lBTnZRd21LaHI5VmJCeWs5bXo1aGRSN1NwZ3VqbzlfZk9vcFBjUktHbGs2UVVSX1VFcjhnOXoxTTE2RE1wdWFhWTgyZmhR",
+        domain: ".youtube.com",
+        path: "/",
+        secure: true,
+      },
+      {
+        name: "PREF",
+        value: "tz=Africa.Douala&f6=40000000&f7=100&f4=4000000&f5=20000",
+        domain: ".youtube.com",
+        path: "/",
+        secure: true,
+      },
+      {
+        name: "SAPISID",
+        value: "wuO6xPfvP7Vy1il0/AIpIUXJL2ZsI3H8n6",
+        domain: ".youtube.com",
+        path: "/",
+        secure: true,
+      },
+      {
+        name: "SID",
+        value:
+          "g.a000tQiEnADLQ7RSxCbA9gfmm7nve-spMsrqnW5OkvXPK16tUDBKHBZLRCjRYMGwsuITc2XkYwACgYKAWASAQASFQHGX2Miie8CRLKcFl2fZrtpWRg_dRoVAUF8yKrHxeC64Rbyiep-ZqL0zhfP0076",
+        domain: ".youtube.com",
+        path: "/",
+        secure: false,
+      },
+      {
+        name: "SIDCC",
+        value:
+          "AKEyXzUOEGUWacZNpVmrWp2rFp7Qh5NjaDQsCbvF23rpRWjxaq9j3EitOWOFfZqfm3BgmoUEfg",
+        domain: ".youtube.com",
+        path: "/",
+        secure: false,
+      },
+      {
+        name: "SSID",
+        value: "AFCVYp92GPjlLXDAd",
+        domain: ".youtube.com",
+        path: "/",
+        secure: true,
+      },
+    ];
+
+    const agent = ytdl.createAgent(cookies);
+
+    const info = await ytdl.getInfo(url, { agent });
+
+    console.log(info);
 
     const videoFormat: VideoFormat[] = [];
     const audioFormat: VideoFormat[] = [];
@@ -119,32 +215,21 @@ app.get("/youtube-info", async (req, res) => {
       if (f.container && ALLOWED_CONTAINERS.has(f.container)) {
         if (
           f.hasVideo &&
-          f.codec.video &&
+          f.videoCodec &&
+          f.audioCodec &&
           f.url &&
-          f.quality.label &&
-          ALLOWED_QUALITIES.has(f.quality.label)
+          f.qualityLabel &&
+          ALLOWED_QUALITIES.has(f.qualityLabel)
         ) {
-          const { quality, contentLength } = f;
+          const { qualityLabel, contentLength } = f;
           videoFormat.push({
             url: f.url,
             itag: f.itag,
             container: f.container,
-            videoCodec: f.codec.video,
-            audioCodec: f.codec.audio,
+            videoCodec: f.videoCodec,
+            audioCodec: f.audioCodec,
             contentLength: contentLength,
-            qualityLabel: quality.label,
-          });
-        } else if (f.hasAudio && f.codec.audio && !f.codec.video && f.url) {
-          const { itag, contentLength } = f;
-
-          audioFormat.push({
-            url: f.url,
-            itag: itag,
-            container: f.container,
-            videoCodec: f.codec.video,
-            audioCodec: f.codec.audio,
-            contentLength: contentLength,
-            qualityLabel: f.quality.label,
+            qualityLabel: qualityLabel,
           });
         }
       }
@@ -239,6 +324,6 @@ app.use(
 );
 
 // eslint-disable-ncontainer-line no-console
-app.listen(PORT, HOST, () => {
-  console.log(`Server running on http://${HOST}:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server running on ${PORT}`);
 });
