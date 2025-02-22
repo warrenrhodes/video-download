@@ -1,29 +1,28 @@
 {
   "expo": {
-    "name": "xvideo-downloader",
-    "slug": "xvideo-downloader",
+    "name": "videoMax",
+    "slug": "videomax",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
+    "jsEngine": "hermes",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F0F0F0"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "permissions": [
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.READ_EXTERNAL_STORAGE"
-      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"],
+      "package": "com.karibu.videomax"
     },
     "web": {
       "bundler": "metro",
@@ -33,15 +32,25 @@
     "plugins": [
       "expo-router",
       [
-        "expo-media-library",
+        "expo-build-properties",
         {
-          "mediaPermission": "Allow $(PRODUCT_NAME) to access your media.",
-          "saveMediaPermission": "Allow $(PRODUCT_NAME) to save the media."
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraProguardRules": "-keep class com.facebook.hermes.unicode.** { *; } -keep class com.facebook.jni.** { *; } -keep class com.swmansion.reanimated.** { *; } -keep class com.facebook.react.turbomodule.** { *; }-keep public class com.horcrux.svg.** {*;}"
+          }
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "cbd881c4-274c-4d85-bb4b-914849c74aaf"
+      }
     }
   }
 }
