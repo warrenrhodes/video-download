@@ -7,15 +7,16 @@ import {
   YouTubeVideoFormat,
   YTRequestFormat,
 } from "@/lib/download_request";
-import { Button, Overlay } from "@rneui/themed";
+import { Overlay, Button } from "@rneui/themed";
 import { useCallback, useEffect, useState } from "react";
-import { View, Animated, Image } from "react-native";
+import { View } from "react-native";
 import { Loading } from "./Loading";
+import { Image } from "expo-image";
 import { displayMessage } from "./Toast";
 import * as FileSystem from "expo-file-system";
-import { cn } from "@/lib/utils";
 import { useDatabase } from "./hooks/DatabaseProvider";
 import { Title } from "./Title";
+import { cn } from "@/lib/utils";
 
 export const MediaDownloadBox = (props: {
   isLoaded: boolean;
@@ -98,7 +99,10 @@ export const MediaDownloadBox = (props: {
       });
       clearData(false);
     } catch (error) {
-      console.error("Error downloading video:", error);
+      displayMessage({
+        message: "An error occurred while downloading video",
+        messageType: "error",
+      });
       clearData(true);
     }
   };
@@ -116,13 +120,15 @@ export const MediaDownloadBox = (props: {
       }
       setFormats(videoData.data);
     } catch (error) {
-      console.error("Error fetching YouTube video data:", error);
+      displayMessage({
+        message: "An error occurred while fetching video data",
+        messageType: "error",
+      });
       clearData(true);
     }
   }, []);
 
   useEffect(() => {
-    console.log("props.isLoaded", props.isLoaded);
     if (props.isLoaded) {
       _fetchYouTubeVideoByUrl(props.url);
     }
@@ -139,14 +145,14 @@ export const MediaDownloadBox = (props: {
     setFormats(undefined);
     props.callback(false);
   };
-
+  console.log(formats);
   return (
     <>
       <Overlay
         transparent
         isVisible={props.isLoaded}
         animationType="fade"
-        backdropStyle={{ backgroundColor: "rgba(0, 0, 0, 0.5  )" }}
+        backdropStyle={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
         overlayStyle={{
           backgroundColor: "transparent",
           justifyContent: "center",
@@ -169,7 +175,7 @@ export const MediaDownloadBox = (props: {
             <View className="justify-center items-center bg-card border-2 border-white h-auto w-full rounded-2xl max-w-[450px] overflow-hidden">
               <View className="w-full flex justify-center items-center">
                 {formats.socialMedia === SocialMediaType.YOUTUBE ? (
-                  <Animated.Image
+                  <Image
                     source={{ uri: formats.thumbnail }}
                     style={[
                       {
@@ -177,7 +183,7 @@ export const MediaDownloadBox = (props: {
                         height: 200,
                       },
                     ]}
-                    resizeMode="contain"
+                    placeholder={require("@/assets/images/video.jpg")}
                   />
                 ) : (
                   <View
@@ -192,7 +198,7 @@ export const MediaDownloadBox = (props: {
                     <SocialMediaImage socialMediaType={formats.socialMedia} />
                   </View>
                 )}
-                <Title className="text-2xl mb-3 p-3 !text-foreground">
+                <Title className="text-2xl mb-3 p-3 !text-foreground truncate line-clamp-2">
                   {formats.title}
                 </Title>
               </View>
@@ -200,7 +206,7 @@ export const MediaDownloadBox = (props: {
               <View className="flex-row justify-center items-start flex-wrap gap-3 w-auto">
                 {formats.formats.video.length > 0 && (
                   <View className="flex-1 flex-col items-center justify-start w-auto">
-                    <Title className="text-lg  mb-3 !text-foreground">
+                    <Title className="text-lg  mb-3 !text-muted-foreground">
                       Video Format
                     </Title>
                     {formats.formats.video.map((e) => {
@@ -239,7 +245,7 @@ export const MediaDownloadBox = (props: {
                 )}
                 {formats.formats.audio.length > 0 && (
                   <View className="flex-1 flex-col items-center w-auto">
-                    <Title className="text-lg mb-3 !text-foreground">
+                    <Title className="text-lg mb-3 !text-muted-foreground">
                       Audio Format
                     </Title>
                     {formats.formats.audio.slice(0, 3).map((e) => {
@@ -330,7 +336,7 @@ const SocialMediaImage = ({
         <Image
           source={require("@/assets/images/facebook.png")}
           style={{ width: "100%", height: "100%" }}
-          resizeMode="cover"
+          contentFit="cover"
         />
       );
     case SocialMediaType.TIKTOK:
@@ -338,7 +344,7 @@ const SocialMediaImage = ({
         <Image
           source={require("@/assets/images/tiktok.jpg")}
           style={{ width: "100%", height: "100%" }}
-          resizeMode="cover"
+          contentFit="cover"
         />
       );
     default:
@@ -346,11 +352,8 @@ const SocialMediaImage = ({
         <Image
           source={require("@/assets/images/video.jpg")}
           style={{ width: "100%", height: "100%" }}
-          resizeMode="cover"
+          contentFit="cover"
         />
       );
   }
 };
-function openAppSettings() {
-  throw new Error("Function not implemented.");
-}

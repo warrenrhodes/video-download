@@ -11,6 +11,7 @@ import { View } from "react-native";
 import { DatabaseProvider } from "@/components/hooks/DatabaseProvider";
 import { useThemeMode } from "@rneui/themed";
 import { cn } from "@/lib/utils";
+import { Privacy } from "@/components/icons/Privacy";
 export default function TabLayout() {
   const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
   const { mode } = useThemeMode();
@@ -95,6 +96,20 @@ export default function TabLayout() {
                     <DownloadIcons size={24} color={color} />
                   ),
                   tabBarLabel: "Download",
+                  tabBarLabelStyle: {
+                    fontFamily: "NerkoOne",
+                    fontSize: 15,
+                  },
+                }}
+              />
+              <Tabs.Screen
+                name="privacy"
+                options={{
+                  title: "Privacy",
+                  tabBarIcon: ({ color }) => (
+                    <Privacy size={24} color={color} />
+                  ),
+                  tabBarLabel: "Privacy",
                   tabBarLabelStyle: {
                     fontFamily: "NerkoOne",
                     fontSize: 15,

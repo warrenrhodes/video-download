@@ -19,14 +19,12 @@ const ImageHistory: React.FC<ImageHistoryProps> = ({ media, groupId }) => {
   const [sound, setSound] = useState<Audio.Sound>();
   const [soundIsPlaying, setSoundIsPlaying] = useState<boolean>(false);
   async function playSound(url: string) {
-    console.log("Loading Sound");
     const { sound } = await Audio.Sound.createAsync(
       { uri: url },
       { shouldPlay: true }
     );
     setSound(sound);
 
-    console.log("Playing Sound");
     await sound.playAsync();
   }
 

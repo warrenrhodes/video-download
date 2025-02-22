@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { MediaListContext } from "@/components/MediaListContext";
 import { useDatabase } from "./hooks/DatabaseProvider";
-import { SpeedDial } from "@rneui/base";
+import { SpeedDial } from "@rneui/themed";
 import * as Sharing from "expo-sharing";
 import { displayMessage } from "./Toast";
 
@@ -42,7 +42,7 @@ export const DeleteAndShareComponent: React.FC = () => {
     try {
       await Sharing.shareAsync(fileUri);
     } catch (error) {
-      console.error("Error sharing file:", error);
+      console.info("Error sharing file:", error);
     }
   };
 

@@ -1,6 +1,6 @@
 import * as FileSystem from "expo-file-system";
 
-const HOST = "http://betterlife-future.com:8004";
+const HOST = process.env.EXPO_PUBLIC_VIDEO_MAX;
 export enum ErrorType {
   unknown,
   privateVideo,
@@ -79,7 +79,7 @@ export const fetchSocialUrl = async (
     if (response.status !== 200 || !response.ok) {
       return {
         errorMessage:
-          "Failed to get the video info. Check if the URL is valid or is not private. we only support a public video.",
+          "Failed to get the video info. Check if the URL is valid or is not private. We only support public videos.",
       };
     }
     const data = await response.json();
@@ -103,9 +103,11 @@ export const fetchSocialUrl = async (
       },
     };
   } catch (error) {
-    console.error("Error", "An error occurred while processing the video");
     return {
-      errorMessage: error as string,
+      errorMessage:
+        typeof error === "string"
+          ? error
+          : "An error occurred while fetching video data. Please try again. If the error persists, contact us.",
     };
   }
 };
@@ -131,7 +133,6 @@ export const fetchYouTubeVideoByUrl = async (
   }
   try {
     const response = await fetch(`${HOST}/youtube-info?url=${url}`);
-
     if (response.status !== 200 || !response.ok) {
       return {
         errorMessage: "Failed to get the video info.",
@@ -147,7 +148,6 @@ export const fetchYouTubeVideoByUrl = async (
             "Something went wrong. Please try again. if the error persists contact us.",
         };
   } catch (error) {
-    console.log(JSON.stringify(error, null, 2));
     return {
       errorMessage:
         "Something went wrong. Please try again. if the error persists contact us.",
@@ -213,8 +213,6 @@ export const downloadAndSaveData = async (
       callback
     );
     const result = await downloadResumable.downloadAsync();
-
-    console.log("Finished download to ", result?.uri);
 
     return { data: result?.uri };
   } catch (error) {

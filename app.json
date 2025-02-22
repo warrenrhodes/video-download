@@ -7,24 +7,21 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
+    "jsEngine": "hermes",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F0F0F0"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "permissions": [
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.ACCESS_MEDIA_LOCATION"
-      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"],
       "package": "com.karibu.videomax"
     },
     "web": {
@@ -35,11 +32,15 @@
     "plugins": [
       "expo-router",
       [
-        "expo-media-library",
+        "expo-build-properties",
         {
-          "mediaPermission": "Allow $(PRODUCT_NAME) to access your media.",
-          "saveMediaPermission": "Allow $(PRODUCT_NAME) to save the media.",
-          "isAccessMediaLocationEnabled": true
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraProguardRules": "-keep class com.facebook.hermes.unicode.** { *; } -keep class com.facebook.jni.** { *; } -keep class com.swmansion.reanimated.** { *; } -keep class com.facebook.react.turbomodule.** { *; }-keep public class com.horcrux.svg.** {*;}"
+          }
         }
       ]
     ],

@@ -34,7 +34,7 @@ export const DatabaseProvider = ({ children }: Props) => {
           setDatabase(JSON.parse(storedDatabase));
         }
       } catch (error) {
-        console.error("Error loading database:", error);
+        console.info("Error loading database:", error);
       }
     };
     loadDatabase();
@@ -43,16 +43,25 @@ export const DatabaseProvider = ({ children }: Props) => {
   const saveDatabase = async <T extends unknown>(
     newDatabase: Record<string, unknown>
   ) => {
+    console.log(newDatabase);
     try {
       await AsyncStorage.setItem("mediaDatabase", JSON.stringify(newDatabase));
       setDatabase(newDatabase);
     } catch (error) {
-      console.error("Error saving database:", error);
+      console.info("Error saving database:", error);
+    } finally {
+      const result = await AsyncStorage.getItem("mediaDatabase");
+      console.log("result,", result);
     }
   };
   async function getData<T>(id: string): Promise<T | null> {
-    const media = database[id] as unknown | undefined;
-    return (media as T) || null;
+    const result = await AsyncStorage.getItem("mediaDatabase");
+    if (!result) {
+      return null;
+    }
+    const parsedResult = JSON.parse(result) as Record<string, unknown>;
+    const media = parsedResult[id];
+    return media === null || media === undefined ? null : (media as T);
   }
 
   async function saveData<T>(data: Data<T>): Promise<void> {

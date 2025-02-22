@@ -84,7 +84,7 @@ export const ParentMediaList = (props: ViewProps) => {
       setAudioMedia(newAudioMedia);
       setLoading(false);
     } catch (error) {
-      console.error("Error accessing media:", error);
+      console.info("Error accessing media:", error);
       setLoading(false);
     }
   }, []);
