@@ -239,6 +239,6 @@ app.use(
 );
 
 // eslint-disable-ncontainer-line no-console
-app.listen(PORT, HOST, () => {
-  console.log(`Server running on http://${HOST}:${PORT}`);
+app.listen(() => {
+  console.log(`Server running`);
 });
