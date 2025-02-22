@@ -1,10 +1,7 @@
-import { useColorScheme } from "@/hooks/useColorScheme";
-
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import "react-native-reanimated";
 import "../global.css";
 import { createTheme, ThemeProvider } from "@rneui/themed";
 
@@ -12,7 +9,6 @@ import { createTheme, ThemeProvider } from "@rneui/themed";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     NerkoOne: require("../assets/fonts/NerkoOne-Regular.ttf"),
   });

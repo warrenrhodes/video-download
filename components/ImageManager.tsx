@@ -14,10 +14,10 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
-import { MasonryFlashList } from "@shopify/flash-list";
 import DownloadImageButton from "./DownloadAnimation";
 import { Video, ResizeMode } from "expo-av";
 import { Overlay } from "@rneui/themed";
+import { MasonryFlashList } from "@shopify/flash-list";
 
 const { width, height } = Dimensions.get("window");
 
@@ -33,7 +33,7 @@ export const WhatsAppMedia = (props: {
   mediaType: MediaType;
 }) => {
   const imageUri = `${WhatsAppDirPath}${props.media}`;
-  const [imageSaveInLocal, setImageSaveInLocal] = useState(false);
+  const [imageSaveInLocal, setImageSaveInLocal] = useState<boolean>();
   const video = useRef<Video>(null);
   const checkImageExistence = useCallback(async () => {
     try {
@@ -46,16 +46,16 @@ export const WhatsAppMedia = (props: {
       }
       setImageSaveInLocal(true);
     } catch (error) {
-      console.error("Error checking image existence:", error);
+      console.info("Error checking image existence:", error);
     }
   }, []);
 
   useEffect(() => {
     checkImageExistence();
   }, []);
-  if (props.mediaType === "videos") {
+  if (props.mediaType === "videos" && imageSaveInLocal !== undefined) {
     return (
-      <View className="flex-1 justify-center items-center rounded-xl bg-neutral-300 w-full overflow-hidden relative">
+      <View className="justify-center items-center rounded-xl bg-neutral-300 overflow-hidden relative">
         <Video
           ref={video}
           source={{
@@ -89,30 +89,32 @@ export const WhatsAppMedia = (props: {
   }
 
   return (
-    <ImageBackground
-      key={props.media}
-      source={{
-        uri: imageUri,
-      }}
-      style={{
-        width: "100%",
-        aspectRatio: 1,
-        overflow: "hidden",
-      }}
-      className="rounded-xl object-contain"
-    >
-      {!imageSaveInLocal ? (
-        <View className="items-center justify-center rounded-xl bg-black/50 h-full w-full">
-          <DownloadImageButton
-            imageSourceUri={imageUri}
-            imageDestinationUri={`${VideoMaxDirPath}${props.media}`}
-            setImageDownloaded={setImageSaveInLocal}
-          />
-        </View>
-      ) : (
-        <TouchableMedia uri={imageUri} mediaType={props.mediaType} />
-      )}
-    </ImageBackground>
+    imageSaveInLocal !== undefined && (
+      <ImageBackground
+        key={props.media}
+        source={{
+          uri: imageUri,
+        }}
+        style={{
+          width: "100%",
+          height: "100%",
+          overflow: "hidden",
+        }}
+        className="rounded-xl object-contain"
+      >
+        {!imageSaveInLocal ? (
+          <View className="items-center justify-center rounded-xl bg-black/50 h-full w-full">
+            <DownloadImageButton
+              imageSourceUri={imageUri}
+              imageDestinationUri={`${VideoMaxDirPath}WhatsApp-${props.media}`}
+              setImageDownloaded={setImageSaveInLocal}
+            />
+          </View>
+        ) : (
+          <TouchableMedia uri={imageUri} mediaType={props.mediaType} />
+        )}
+      </ImageBackground>
+    )
   );
 };
 
@@ -129,21 +131,63 @@ export const MasonryList: React.FC<MasonryListProps> = ({
 }) => {
   const ITEM_MARGIN = 5;
 
-  const renderItem = useCallback(
-    ({ item }: { item: MediaItem }) => (
+  // const renderItem = useCallback(
+  //   ({ item }: { item: MediaItem }) => (
+  //     <View
+  //       className="mb-4 w-full h-full flex-1"
+  //       style={{ flex: 1, margin: ITEM_MARGIN / 2 }}
+  //     >
+  //       <WhatsAppMedia media={item.uri} mediaType={mediaType} />
+  //     </View>
+  //   ),
+  //   []
+  // );
+  const getItemSize = (index: number) => {
+    const pattern = [
+      { width: 1, height: 1 },
+      { width: 1, height: 1.2 },
+      { width: 1, height: 1.3 },
+      { width: 1, height: 1.4 },
+      { width: 1, height: 1.5 },
+      { width: 1, height: 1.6 },
+      { width: 1, height: 1.7 },
+      { width: 1, height: 1 },
+      { width: 1, height: 1.2 },
+      { width: 1, height: 1.3 },
+      { width: 1, height: 1.4 },
+      { width: 1, height: 1.5 },
+      { width: 1, height: 1 },
+    ];
+    return pattern[index % pattern.length];
+  };
+
+  const getColumnFlex = (_: any, index: number) => {
+    const size = getItemSize(index);
+    return size.width;
+  };
+
+  const renderItem = ({ item, index }: { item: MediaItem; index: number }) => {
+    const size = getItemSize(index);
+    const itemWidth = (width - 20) / 3;
+    const itemHeight = itemWidth * size.height;
+
+    return (
       <View
-        className="mb-4 w-full h-full flex-1"
-        style={{ flex: 1, margin: ITEM_MARGIN / 2 }}
+        className="mb-4"
+        style={{
+          margin: 1,
+          width: itemWidth,
+          height: itemHeight,
+        }}
       >
         <WhatsAppMedia media={item.uri} mediaType={mediaType} />
       </View>
-    ),
-    []
-  );
+    );
+  };
 
   return (
     <View className="flex-1">
-      {mediaList.length === 0 && (
+      {mediaList.length === 0 ? (
         <View className="flex flex-col flex-1 justify-center items-center">
           <ScrollView
             contentContainerStyle={styles.container}
@@ -154,25 +198,22 @@ export const MasonryList: React.FC<MasonryListProps> = ({
             <Text>No data found. Pull down to refresh the data.</Text>
           </ScrollView>
         </View>
+      ) : (
+        <View className="flex-1 w-screen">
+          <MasonryFlashList
+            estimatedItemSize={200}
+            numColumns={mediaType === "videos" ? 2 : 3}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ padding: 5 }}
+            data={mediaList}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            getColumnFlex={mediaType === "videos" ? undefined : getColumnFlex}
+            onRefresh={onRefresh}
+            refreshing={false}
+          />
+        </View>
       )}
-      <MasonryFlashList
-        estimatedItemSize={200}
-        numColumns={mediaType == "videos" ? 2 : 3}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ padding: 5 }}
-        data={mediaList}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        getColumnFlex={
-          mediaType == "videos"
-            ? undefined
-            : (items, index, maxColumns, extraData) => {
-                return index % 2 === 0 ? 1 : 2;
-              }
-        }
-        onRefresh={onRefresh}
-        refreshing={false}
-      />
     </View>
   );
 };
@@ -242,7 +283,7 @@ const ImageViewer = ({
           setIsVideoLoading(false);
         },
         (error) => {
-          console.error("Error loading image:", error);
+          console.info("Error loading image:", error);
           setIsVideoLoading(false);
         }
       );

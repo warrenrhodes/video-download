@@ -1,6 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { View } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
 import { MediaListContext, MediaGroup } from "./MediaListContext";
 import ImageHistory from "@/components/MediaItemDownload";
 import IconSelection from "@/components/IconSelection";
@@ -18,7 +17,7 @@ export const ImageHistoryList: React.FC<ImageHistoryListProps> = ({
     useContext(MediaListContext);
 
   return (
-    <Animated.View entering={FadeIn} className="mb-2">
+    <View className="mb-2">
       <View className="bg-primary/10 h-16 w-full p-4 flex-row justify-between">
         <Title className=" !text-foreground/80 text-xl">
           {mediaGroup.date}
@@ -41,7 +40,7 @@ export const ImageHistoryList: React.FC<ImageHistoryListProps> = ({
           />
         ))}
       </View>
-    </Animated.View>
+    </View>
   );
 };
 

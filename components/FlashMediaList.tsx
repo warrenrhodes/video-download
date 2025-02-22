@@ -1,11 +1,5 @@
 import React, { useReducer, useEffect, useContext } from "react";
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  Dimensions,
-} from "react-native";
+import { View, StyleSheet, ScrollView, RefreshControl } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import {
   MediaGroup,
@@ -34,8 +28,6 @@ const FlashMediaList: React.FC<FlashMediaListProps> = ({
     mediaListReducer,
     Object.values(medias)
   );
-  console.log(mediaList);
-  console.log(mediaList[0]?.medias);
 
   useEffect(() => {
     dispatch({ type: "updateMediaList", mediaList: Object.values(medias) });
@@ -61,9 +53,8 @@ const FlashMediaList: React.FC<FlashMediaListProps> = ({
     try {
       dispatch({ type: "deleteItem", groupId, itemId });
       await FileSystem.deleteAsync(itemId);
-      console.log("File deleted successfully");
     } catch (error) {
-      console.error("Error deleting file:", error);
+      console.info("Error deleting file:", error);
     }
   };
 
@@ -75,7 +66,7 @@ const FlashMediaList: React.FC<FlashMediaListProps> = ({
           <RefreshControl refreshing={false} onRefresh={refreshMedia} />
         }
       >
-        <Title className="text-center text-xl !text-foreground">
+        <Title className="text-center text-xl !text-muted-foreground">
           No data found. Pull down to refresh the data.
         </Title>
       </ScrollView>
@@ -94,19 +85,13 @@ const FlashMediaList: React.FC<FlashMediaListProps> = ({
         mediaType,
       }}
     >
-      <View
-        style={{
-          flex: 1,
-          height: Dimensions.get("window").height - 100,
-          width: Dimensions.get("window").width,
-        }}
-      >
+      <View className="flex-1 w-screen">
         <FlashList
           data={mediaList}
           estimatedItemSize={200}
           renderItem={({ item }) => <ImageHistoryList mediaGroup={item} />}
           keyExtractor={(item) => item.date}
-          contentContainerStyle={{ paddingBottom: 2 }}
+          contentContainerStyle={{ padding: 2 }}
           onRefresh={refreshMedia}
           refreshing={refreshing}
         />

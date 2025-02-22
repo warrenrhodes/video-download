@@ -36,7 +36,7 @@ const DownloadImageButton = ({
         progress.setValue(0);
       });
     } catch (error) {
-      console.error("Download error:", error);
+      console.info("Download error:", error);
     }
   };
 

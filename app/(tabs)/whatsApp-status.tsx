@@ -2,13 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { View, Platform, Linking, TouchableOpacity } from "react-native";
 import * as FileSystem from "expo-file-system";
-import { useFocusEffect } from "expo-router";
-import {
-  MediaType,
-  VideoMaxDirPath,
-  WhatsAppDirPath,
-  WhatsAppTabIcons,
-} from "@/lib/constants";
+import { MediaType, WhatsAppDirPath, WhatsAppTabIcons } from "@/lib/constants";
 import { Loading } from "@/components/Loading";
 import { ScrollableTabs } from "@/components/Tabs";
 import { MasonryList, MediaItem } from "@/components/ImageManager";
@@ -39,7 +33,6 @@ export default function WaDownloader() {
     try {
       // Read directory contents
       const files = await FileSystem.readDirectoryAsync(WhatsAppDirPath);
-
       // Filter for image and video files
       const imageFiles = files.filter(
         (file) =>
@@ -52,7 +45,6 @@ export default function WaDownloader() {
       setVideoMedias([...videoFiles]);
       setLoading(false);
     } catch (error) {
-      console.log("Error accessing WhatsApp status media:", error);
       setErrorMessage(
         "Error accessing WhatsApp media. Please verify you have WhatsApp installed and try again."
       );
@@ -74,48 +66,38 @@ export default function WaDownloader() {
 
   const verifyPermission = async (): Promise<boolean> => {
     if (permissionResponse?.status == "granted") {
+      setErrorMessage(undefined);
       return true;
     }
-    const result = await requestPermission();
-    if (!result.granted && !result.canAskAgain) {
+    if (permissionResponse?.status == "undetermined") {
+      openAppSettings();
       setErrorMessage(
         "Permission to the media library is required to display the WhatsApp status media."
       );
       setLoading(false);
       return false;
     }
+    const result = await requestPermission();
+    if (!result.granted) {
+      setErrorMessage(
+        "Permission to the media library is required to display the WhatsApp status media."
+      );
+      setLoading(false);
+      return false;
+    }
+    setErrorMessage(undefined);
+
     return true;
   };
 
-  async function getOrCreateDirectory() {
-    try {
-      // Check if directory exists
-      const dirInfo = await FileSystem.getInfoAsync(VideoMaxDirPath);
-
-      if (!dirInfo.exists) {
-        // Create directory if it doesn't exist
-        await FileSystem.makeDirectoryAsync(VideoMaxDirPath, {
-          intermediates: true,
-        });
-      }
-
-      return true;
-    } catch (error) {
-      console.error("Error creating directory:", error);
-      return false;
-    }
-  }
-
   useEffect(() => {
-    getOrCreateDirectory();
     getWhatsAppStatusMedia();
   }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      getWhatsAppStatusMedia();
-    }, [])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     getWhatsAppStatusMedia();
+  //   }, [])
+  // );
 
   return (
     <View className="flex-1 flex-col bg-background w-full">
@@ -129,22 +111,21 @@ export default function WaDownloader() {
                 <View className="flex-1 items-center justify-center p-6">
                   <Loading />
                 </View>
-              ) : errorMessage ? (
+              ) : errorMessage != undefined ? (
                 <View className="flex-1 items-center justify-center p-6 flex-col gap-3">
-                  <Title className=" text-center text-xl !text-foreground">
+                  <Title className=" text-center text-xl !text-muted-foreground">
                     {errorMessage}
                   </Title>
                   {permissionResponse?.status != "granted" && (
                     <View className=" items-center justify-center flex-row gap-5">
                       <TouchableOpacity
                         className="bg-primary rounded-lg p-3 items-center"
-                        onPress={getWhatsAppStatusMedia}
-                      >
-                        <Title className="!text-white text-xl">Reload</Title>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        className="bg-primary rounded-lg p-3 items-center"
-                        onPress={openAppSettings}
+                        onPress={async () => {
+                          const result = await verifyPermission();
+                          if (result) {
+                            await getWhatsAppStatusMedia();
+                          }
+                        }}
                       >
                         <Title className="!text-white text-xl">
                           Request Permission
@@ -171,22 +152,21 @@ export default function WaDownloader() {
                 <View className="flex-1 items-center justify-center p-6">
                   <Loading />
                 </View>
-              ) : errorMessage ? (
+              ) : errorMessage != undefined ? (
                 <View className="flex-1 items-center justify-center p-6 flex-col gap-3">
-                  <Title className=" text-center text-xl !text-foreground">
+                  <Title className=" text-center text-xl !text-muted-foreground">
                     {errorMessage}
                   </Title>
                   {permissionResponse?.status != "granted" && (
                     <View className=" items-center justify-center flex-row gap-5">
                       <TouchableOpacity
                         className="bg-primary rounded-lg p-3 items-center"
-                        onPress={getWhatsAppStatusMedia}
-                      >
-                        <Title className="!text-white text-xl">Reload</Title>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        className="bg-primary rounded-lg p-3 items-center"
-                        onPress={openAppSettings}
+                        onPress={async () => {
+                          const result = await verifyPermission();
+                          if (result) {
+                            await getWhatsAppStatusMedia();
+                          }
+                        }}
                       >
                         <Title className="!text-white text-xl">
                           Request Permission

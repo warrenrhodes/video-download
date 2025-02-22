@@ -11,7 +11,6 @@ import * as Clipboard from "expo-clipboard";
 import { Spacing } from "./Spacing";
 import { MediaDownloadBox } from "./MediaDownloadBox";
 import { Title } from "./Title";
-import { SocialIcon } from "@rneui/themed";
 import { Loading } from "./Loading";
 
 export const Hero = () => {
@@ -43,14 +42,14 @@ export const Hero = () => {
               Downloader
             </Title>
             <View className="flex-row items-center">
-              <SocialIcon type={"facebook"} iconSize={15} />
-              <SocialIcon type={"youtube"} iconSize={15} />
-              <View className="rounded-full ml-2 bg-black size-9">
+              {/* <SocialIcon type={"facebook"} iconSize={15} /> */}
+              {/* <SocialIcon type={"youtube"} iconSize={15} /> */}
+              {/* <View className="rounded-full ml-2 bg-black size-9">
                 <Image
                   source={require("@/assets/images/tiktok-icon.png")}
                   style={{ width: "100%", height: "100%" }}
                 />
-              </View>
+              </View> */}
             </View>
             <Title className="!text-foreground text-md text-center mb-4">
               Do Not Look Below! Explore Our
